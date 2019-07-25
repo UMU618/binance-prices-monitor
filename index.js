@@ -17,8 +17,8 @@ setInterval(() => {
     .get24hr(conf.symbol)
     .then((jo) => {
       if (jo && jo[0]) {
-        compare24hr(jo[0].openPrice, jo[0].lastPrice)
-        if (lastPrice != 0) {
+        const alert = compare24hr(jo[0].openPrice, jo[0].lastPrice)
+        if (lastPrice != 0 && !alert) {
           compare(lastPrice, jo[0].lastPrice)
         }
         lastPrice = jo[0].lastPrice
@@ -28,29 +28,32 @@ setInterval(() => {
 
 function compare24hr(open, close) {
   if (open < close) {
+    // increasing
     if ((close - open) / open >= conf.last24hPrecent) {
       if (lastPrice == 0) {
         alerts.sendDingtalk(conf.dingtalkToken, conf.baseAsset + ' price increase to ' + close)
-      }
-      else {
+        return true
+      } else {
         if (lastPrice < close) {
           alerts.sendDingtalk(conf.dingtalkToken, conf.baseAsset + ' price increase to ' + close)
+          return true
         }
       }
     }
-  }
-  else {
+  } else {
     if ((open - close) / open >= conf.last24hPrecent) {
       if (lastPrice == 0) {
-        alerts.sendDingtalk(conf.dingtalkToken, conf.baseAsset + ' price fall to ' + close,)
-      }
-      else {
+        alerts.sendDingtalk(conf.dingtalkToken, conf.baseAsset + ' price fall to ' + close)
+        return true
+      } else {
         if (lastPrice > close) {
           alerts.sendDingtalk(conf.dingtalkToken, conf.baseAsset + ' price fall to ' + close)
+          return true
         }
       }
     }
   }
+  return false
 }
 
 function compare(oldPrice, newPrice) {
